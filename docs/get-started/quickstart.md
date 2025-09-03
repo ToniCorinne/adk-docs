@@ -34,6 +34,16 @@ application entirely on your machine and is recommended for internal development
 
     To install ADK and setup the environment, proceed to the following steps.
 
+=== "Go"
+
+    1. **Install Go:** If you don't have Go installed, download and install it from the [official Go website](https://go.dev/doc/install).
+
+    2. **Install the ADK CLI:** The ADK command-line interface (CLI) is used to run and manage your agents.
+        ```bash
+        go install github.com/google/adk/cmd/adk@latest
+        ```
+    > **Note:** The ADK for Go is under active development and the package path might change.
+
 ## 2. Create Agent Project { #create-agent-project }
 
 ### Project structure
@@ -139,6 +149,41 @@ application entirely on your machine and is recommended for internal development
     --8<-- "examples/java/cloud-run/src/main/java/agents/multitool/MultiToolAgent.java:full_code"
     ```
 
+=== "Go"
+
+    You will need to create the following project structure:
+
+    ```console
+    parent_folder/
+    └── multi_tool_agent/
+        ├── go.mod
+        └── main.go
+    ```
+
+    Create the folder `multi_tool_agent` and initialize a Go module:
+
+    ```bash
+    mkdir multi_tool_agent
+    cd multi_tool_agent
+    go mod init multi_tool_agent
+    touch main.go
+    ```
+
+    Next, add the ADK for Go as a dependency to your project. Run the following command inside the `multi_tool_agent` directory:
+
+    ```bash
+    go get github.com/google/adk-go
+    ```
+    > **Note:** The `adk-go` library is under active development and the package path might change.
+
+    ### `main.go`
+
+    Copy and paste the following code into `main.go`:
+
+    ```go title="multi_tool_agent/main.go"
+    --8<-- "examples/go/snippets/get-started/multi_tool_agent/main.go"
+    ```
+
 ![intro_components.png](../assets/quickstart-flow-tool.png)
 
 ## 3. Set up the model { #set-up-the-model }
@@ -170,6 +215,13 @@ agent will be unable to function.
         export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
         ```
 
+        When using Go, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=FALSE
+        export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
+        ```
+
     3. Replace `PASTE_YOUR_ACTUAL_API_KEY_HERE` with your actual `API KEY`.
 
 === "Gemini - Google Cloud Vertex AI"
@@ -193,6 +245,14 @@ agent will be unable to function.
         export GOOGLE_CLOUD_LOCATION=LOCATION
         ```
 
+        When using Go, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=TRUE
+        export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
+        export GOOGLE_CLOUD_LOCATION=LOCATION
+        ```
+
 === "Gemini - Google Cloud Vertex AI with Express Mode"
     1. You can sign up for a free Google Cloud project and use Gemini for free with an eligible account!
         * Set up a
@@ -207,6 +267,13 @@ agent will be unable to function.
         ```
 
         When using Java, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=TRUE
+        export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_EXPRESS_MODE_API_KEY_HERE
+        ```
+
+        When using Go, define environment variables:
 
         ```console title="terminal"
         export GOOGLE_GENAI_USE_VERTEXAI=TRUE
@@ -420,7 +487,33 @@ agent will be unable to function.
         gradle runAgent
         ```
 
+=== "Go"
 
+    There are multiple ways to interact with your agent:
+
+    === "Dev UI (adk web)"
+
+        Run the following command from the `parent_folder` to launch the **dev UI**.
+
+        ```shell
+        adk web
+        ```
+
+        **Step 1:** Open the URL provided (usually `http://localhost:8000` or
+        `http://127.0.0.1:8000`) directly in your browser.
+
+        **Step 2.** In the top-left corner of the UI, you can select your agent in
+        the dropdown. Select "multi_tool_agent".
+
+    === "Terminal"
+
+        Navigate to the `multi_tool_agent` directory and run the following command to chat with your agent.
+
+        ```
+        go run .
+        ```
+
+        To exit, use Cmd/Ctrl+C.
 
 ### 📝 Example prompts to try
 
