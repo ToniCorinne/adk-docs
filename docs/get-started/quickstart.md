@@ -34,6 +34,20 @@ application entirely on your machine and is recommended for internal development
 
     To install ADK and setup the environment, proceed to the following steps.
 
+=== "Go"
+
+    Initialize a new Go module:
+
+    ```bash
+    go mod init multi_tool_agent
+    ```
+
+    Install ADK:
+
+    ```bash
+    go get github.com/google/adk
+    ```
+
 ## 2. Create Agent Project { #create-agent-project }
 
 ### Project structure
@@ -139,6 +153,96 @@ application entirely on your machine and is recommended for internal development
     --8<-- "examples/java/cloud-run/src/main/java/agents/multitool/MultiToolAgent.java:full_code"
     ```
 
+=== "Go"
+
+    Go projects generally feature the following project structure:
+
+    ```console
+    project_folder/
+    ├── go.mod
+    ├── go.sum
+    └── main.go
+    ```
+
+    ### Create `main.go`
+
+    Create a `main.go` source file in the `project_folder` directory.
+
+    Copy and paste the following code into `main.go`:
+
+    ```go title="main.go"
+    package main
+
+    import (
+    	"context"
+    	"fmt"
+    	"log"
+    	"time"
+
+    	"github.com/google/generative-ai-go/genai"
+    	"google.golang.org/api/option"
+
+    	"github.com/google/adk/agent"
+    	"github.com/google/adk/llm/gemini"
+    	"github.com/google/adk/tool"
+    )
+
+    func main() {
+    	ctx := context.Background()
+    	client, err := genai.NewClient(ctx, option.WithAPIKey("YOUR_API_KEY"))
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+    	defer client.Close()
+
+    	llm, err := gemini.New(ctx, "gemini-1.5-flash", client)
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+
+    	weatherTool := tool.Function{
+    		Name: "get_weather",
+    		Description: "Get the weather for a specific location.",
+    		Args: []tool.Arg{
+    			{Name: "location", Description: "The location to get the weather for."},
+    		},
+    		Func: func(ctx context.Context, args map[string]any) (map[string]any, error) {
+    			location := args["location"].(string)
+    			// In a real application, you would call a weather API here.
+    			return map[string]any{"weather": fmt.Sprintf("The weather in %s is sunny.", location)}, nil
+    		},
+    	}
+
+    	timeTool := tool.Function{
+    		Name: "get_time",
+    		Description: "Get the current time for a specific location.",
+    		Args: []tool.Arg{
+    			{Name: "location", Description: "The location to get the time for."},
+    		},
+    		Func: func(ctx context.Context, args map[string]any) (map[string]any, error) {
+    			location := args["location"].(string)
+    			// In a real application, you would call a time API here.
+    			return map[string]any{"time": fmt.Sprintf("The time in %s is %s.", location, time.Now().Format(time.Kitchen))}, nil
+    		},
+    	}
+
+    	a, err := agent.New(
+    		ctx,
+    		llm,
+    		agent.WithTools(weatherTool, timeTool),
+    	)
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+
+    	result, err := a.Process(ctx, "What is the weather and time in New York?")
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+    	fmt.Println(result.Message())
+    }
+    ```
+
 ![intro_components.png](../assets/quickstart-flow-tool.png)
 
 ## 3. Set up the model { #set-up-the-model }
@@ -170,6 +274,13 @@ agent will be unable to function.
         export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
         ```
 
+        When using Go, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=FALSE
+        export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
+        ```
+
     3. Replace `PASTE_YOUR_ACTUAL_API_KEY_HERE` with your actual `API KEY`.
 
 === "Gemini - Google Cloud Vertex AI"
@@ -193,6 +304,14 @@ agent will be unable to function.
         export GOOGLE_CLOUD_LOCATION=LOCATION
         ```
 
+        When using Go, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=TRUE
+        export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
+        export GOOGLE_CLOUD_LOCATION=LOCATION
+        ```
+
 === "Gemini - Google Cloud Vertex AI with Express Mode"
     1. You can sign up for a free Google Cloud project and use Gemini for free with an eligible account!
         * Set up a
@@ -207,6 +326,13 @@ agent will be unable to function.
         ```
 
         When using Java, define environment variables:
+
+        ```console title="terminal"
+        export GOOGLE_GENAI_USE_VERTEXAI=TRUE
+        export GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_EXPRESS_MODE_API_KEY_HERE
+        ```
+
+        When using Go, define environment variables:
 
         ```console title="terminal"
         export GOOGLE_GENAI_USE_VERTEXAI=TRUE
@@ -332,7 +458,7 @@ agent will be unable to function.
         To learn how to use `adk api_server` for testing, refer to the
         [documentation on testing](testing.md).
 
-=== "Java"
+==="Java"
 
     Using the terminal, navigate to the parent directory of your agent project
     (e.g. using `cd ..`):
@@ -419,6 +545,26 @@ agent will be unable to function.
         ```console
         gradle runAgent
         ```
+
+==="Go"
+
+    Using the terminal, navigate to your agent project directory:
+
+    ```console
+    project_folder/      <-- navigate to this directory
+        go.mod
+        go.sum
+        main.go
+    ```
+
+    Run the following command to chat with your agent.
+
+    ```
+    go run .
+    ```
+
+    To exit, use Cmd/Ctrl+C.
+
 
 
 
